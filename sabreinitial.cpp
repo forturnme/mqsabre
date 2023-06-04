@@ -1,4 +1,4 @@
-#include "device/SABREINITIALinitial.hpp"
+#include "device/mapping.hpp"
 
 #include <algorithm>
 #include <memory>
@@ -69,7 +69,7 @@ std::pair<qbit_t, VT<Gate>> GateToAbstractGate(const VT<std::shared_ptr<BasicGat
 
 // -----------------------------------------------------------------------------
 
-bool SABREINITIAL::IsExecutable(const VT<int>& pi, int g) const {
+bool SABRE::IsExecutable(const VT<int>& pi, int g) const {
     if (gates[g].type == "CNOT") {
         int p = pi[gates[g].q1], q = pi[gates[g].q2];
         return std::any_of(G[p].begin(), G[p].end(), [&](int a) { return a == q; });
@@ -78,7 +78,7 @@ bool SABREINITIAL::IsExecutable(const VT<int>& pi, int g) const {
     }
 }
 
-VT<int> SABREINITIAL::GetReversePi(const VT<int>& pi) const {
+VT<int> SABRE::GetReversePi(const VT<int>& pi) const {
     VT<int> rpi(pi.size());
     for (int i = 0; i < pi.size(); ++i) {
         rpi[pi[i]] = i;
@@ -86,7 +86,7 @@ VT<int> SABREINITIAL::GetReversePi(const VT<int>& pi) const {
     return rpi;
 }
 
-std::set<std::pair<int, int>> SABREINITIAL::ObtainSWAPs(const std::list<int>& F, const VT<int>& pi) const {
+std::set<std::pair<int, int>> SABRE::ObtainSWAPs(const std::list<int>& F, const VT<int>& pi) const {
     std::set<std::pair<int, int>> ret;
     for (int g : F) {
         int x = pi[gates[g].q1];
@@ -99,7 +99,7 @@ std::set<std::pair<int, int>> SABREINITIAL::ObtainSWAPs(const std::list<int>& F,
     return ret;
 }
 
-std::list<int> SABREINITIAL::GetNextLayer(const std::list<int>& F, const VT<VT<int>>& DAG, const VT<int>& indeg) const {
+std::list<int> SABRE::GetNextLayer(const std::list<int>& F, const VT<VT<int>>& DAG, const VT<int>& indeg) const {
     VT<int> tmp_deg = indeg;
     std::list<int> ret;
     for (int x : F) {
@@ -120,11 +120,11 @@ std::list<int> SABREINITIAL::GetNextLayer(const std::list<int>& F, const VT<VT<i
     return ret;
 }
 
-std::list<int> SABREINITIAL::GetExtendedSet(const std::list<int>& F, const VT<VT<int>>& DAG, const VT<int>& indeg) const {
+std::list<int> SABRE::GetExtendedSet(const std::list<int>& F, const VT<VT<int>>& DAG, const VT<int>& indeg) const {
     return GetNextLayer(F, DAG, indeg);
 }
 
-double SABREINITIAL::HBasic(const std::list<int>& F, const VT<int>& pi) const {
+double SABRE::HBasic(const std::list<int>& F, const VT<int>& pi) const {
     int sum = 0;
     for (int g : F) {
         int q1 = gates[g].q1;
@@ -134,7 +134,7 @@ double SABREINITIAL::HBasic(const std::list<int>& F, const VT<int>& pi) const {
     return sum;
 }
 
-double SABREINITIAL::HLookAhead(const std::list<int>& F, const std::list<int>& E, const VT<int>& pi) const {
+double SABRE::HLookAhead(const std::list<int>& F, const std::list<int>& E, const VT<int>& pi) const {
     double s1 = HBasic(F, pi) / static_cast<double>(F.size());
     if (E.size() == 0) {
         return s1;
@@ -144,14 +144,14 @@ double SABREINITIAL::HLookAhead(const std::list<int>& F, const std::list<int>& E
     }
 }
 
-double SABREINITIAL::H(const std::list<int>& F, const std::list<int>& E, const VT<int>& pi, const std::pair<int, int>& SWAP,
+double SABRE::H(const std::list<int>& F, const std::list<int>& E, const VT<int>& pi, const std::pair<int, int>& SWAP,
                 const VT<double>& decay) const {
     // return HBasic(F, pi);
     // return HLookAhead(F, E, pi);
     return std::max(decay[SWAP.first], decay[SWAP.second]) * HLookAhead(F, E, pi);
 }
 
-SABREINITIAL::SABREINITIAL(const VT<std::shared_ptr<BasicGate>>& circ, const std::shared_ptr<QubitsTopology>& coupling_graph) {
+SABRE::SABRE(const VT<std::shared_ptr<BasicGate>>& circ, const std::shared_ptr<QubitsTopology>& coupling_graph) {
     auto tmp = GateToAbstractGate(circ);
     this->num_logical = tmp.first;
     this->gates = tmp.second;
@@ -189,7 +189,7 @@ SABREINITIAL::SABREINITIAL(const VT<std::shared_ptr<BasicGate>>& circ, const std
     }
 }
 
-VT<Gate> SABREINITIAL::HeuristicSearch(VT<int>& pi, const VT<VT<int>>& DAG) {
+VT<Gate> SABRE::HeuristicSearch(VT<int>& pi, const VT<VT<int>>& DAG) {
     VT<Gate> ans;  // physical circuit
     int tot = 0;   // total number of additional SWAP gates
 
@@ -273,12 +273,12 @@ VT<Gate> SABREINITIAL::HeuristicSearch(VT<int>& pi, const VT<VT<int>>& DAG) {
     return ans;
 }
 
-void SABREINITIAL::IterOneTurn(VT<int>& pi) {
+void SABRE::IterOneTurn(VT<int>& pi) {
     HeuristicSearch(pi, this->DAG);   // using original circuit to update
     HeuristicSearch(pi, this->RDAG);  // using reversed circuit to update
 }
 
-std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> SABREINITIAL::Solve(int iter_num, double W, double delta1, double delta2) {
+std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> SABRE::Solve(int iter_num, double W, double delta1, double delta2) {
     this->SetParameters(W, delta1, delta2);
 
     // generate random initial mapping
@@ -288,8 +288,7 @@ std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> SABREINITIAL::Solve(int iter
 
     auto seed = std::chrono::system_clock::now().time_since_epoch().count();
     auto engine = std::default_random_engine(seed);
-    // shuffle(pi.begin(), pi.end(), engine);
-    // should not shuffle them!
+    shuffle(pi.begin(), pi.end(), engine);
 
     // iterate to update initial mapping
     for (int t = 0; t < iter_num; ++t) {
@@ -308,7 +307,33 @@ std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> SABREINITIAL::Solve(int iter
     return {gate_info, {initial_mapping, pi}};
 }
 
-inline void SABREINITIAL::SetParameters(double W, double delta1, double delta2) {
+// create a function named SolverInit
+// it is similar to the function named Solve but
+// it takes an extra parameter named pi
+// which is a python list object passed by python caller
+// and it is used to initialize the mapping
+std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> SABRE::SolverInit(VT<int> pi, 
+                                                                      int iter_num, double W, 
+                                                                      double delta1, double delta2) {
+    this->SetParameters(W, delta1, delta2);
+
+    // iterate to update initial mapping
+    for (int t = 0; t < iter_num; ++t) {
+        IterOneTurn(pi);
+    }
+    auto gs = HeuristicSearch(pi, this->DAG);
+    VT<VT<int>> gate_info;
+    for (auto& g : gs) {
+        if (g.type == "SWAP") {
+            gate_info.push_back({-1, g.q1, g.q2});
+        } else {
+            gate_info.push_back({std::stoi(g.tag), g.q1, g.q2});
+        }
+    }
+    return {gate_info, {initial_mapping, pi}};
+}
+
+inline void SABRE::SetParameters(double W, double delta1, double delta2) {
     this->W = W;
     this->delta1 = delta1;
     this->delta2 = delta2;

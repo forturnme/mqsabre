@@ -32,7 +32,7 @@ std::pair<qbit_t, VT<Gate>> GateToAbstractGate(const VT<std::shared_ptr<BasicGat
  */
 VT<VT<int>> GetCircuitDAG(int n, const VT<Gate>& gates);
 
-class SABREINITIAL {
+class SABRE {
  private:
     int num_logical;
     int num_physical;
@@ -169,6 +169,7 @@ class SABREINITIAL {
      *                        pi1 is final mapping from logical to physical
      */
     std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> Solve(int iter_num, double W, double delta1, double delta2);
+    std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> SolverInit(VT<int> pi, int iter_num, double W, double delta1, double delta2);
 
     inline void SetParameters(double W, double delta1, double delta2);
 };
