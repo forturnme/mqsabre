@@ -89,7 +89,7 @@ class SABRE:
                         new_circ += ori_gate.on([p1, p2])
         return new_circ, init_map, final_map
 
-    def solve_init(self, initial_mapping: list, iter_num: int, w: float, delta1: float, delta2: float):
+    def solve_init(self, initial_mapping: list, iter_num: int, w: float, delta1: float, delta2: float, no_extra=False):
         """
         Solve qubit mapping problem with SABRE algorithm, and configure the initial mapping.
 
@@ -97,7 +97,7 @@ class SABRE:
             Tuple[Circuit, List[int], List[int]], a quantum circuit that can execute on given device,
                 the initial mapping order, and the final mapping order.
         """
-        gate_info, (init_map, final_map) = self.cpp_solver.solve_init(initial_mapping, iter_num, w, delta1, delta2)
+        gate_info, (init_map, final_map) = self.cpp_solver.solve_init(initial_mapping, iter_num, w, delta1, delta2, no_extra)
         new_circ = Circuit()
         for idx, p1, p2 in gate_info:
             if idx == -1:

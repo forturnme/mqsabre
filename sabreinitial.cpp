@@ -314,17 +314,19 @@ std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> SABRE::Solve(int iter_num, d
 // and it is used to initialize the mapping
 std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> SABRE::SolverInit(const VT<int>& init_layout, 
                                                                       int iter_num, double W, 
-                                                                      double delta1, double delta2) {
+                                                                      double delta1, double delta2, bool no_extra) {
     VT<int> pi(this->num_physical);
     // copy init_layout to pi
     for (int i = 0; i < init_layout.size(); ++i)
         pi[i] = init_layout[i];
     int n = init_layout.size();
     // then fill the rest of pi with the qubits do not appear in init_layout
-    for (int i = 0; i < pi.size(); ++i) {
-        if (std::find(init_layout.begin(), init_layout.end(), i) == init_layout.end()) {
-            pi[n] = i;
-            n++;
+    if(!no_extra){
+        for (int i = 0; i < pi.size(); ++i) {
+            if (std::find(init_layout.begin(), init_layout.end(), i) == init_layout.end()) {
+                pi[n] = i;
+                n++;
+            }
         }
     }
     this->SetParameters(W, delta1, delta2);

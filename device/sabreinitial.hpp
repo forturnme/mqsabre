@@ -169,7 +169,7 @@ class SABRE {
      *                        pi1 is final mapping from logical to physical
      */
     std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> Solve(int iter_num, double W, double delta1, double delta2);
-    std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> SolverInit(const VT<int>& init_layout, int iter_num, double W, double delta1, double delta2);
+    std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> SolverInit(const VT<int>& init_layout, int iter_num, double W, double delta1, double delta2, bool no_extra);
 
     inline void SetParameters(double W, double delta1, double delta2);
 };
