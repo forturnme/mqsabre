@@ -317,8 +317,16 @@ std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> SABRE::SolverInit(const VT<i
                                                                       double delta1, double delta2) {
     VT<int> pi(this->num_physical);
     // copy init_layout to pi
-    for (int i = 0; i < pi.size(); ++i)
+    for (int i = 0; i < init_layout.size(); ++i)
         pi[i] = init_layout[i];
+    int n = init_layout.size();
+    // then fill the rest of pi with the qubits do not appear in init_layout
+    for (int i = 0; i < pi.size(); ++i) {
+        if (std::find(init_layout.begin(), init_layout.end(), i) == init_layout.end()) {
+            pi[n] = i;
+            n++;
+        }
+    }
     this->SetParameters(W, delta1, delta2);
 
 
