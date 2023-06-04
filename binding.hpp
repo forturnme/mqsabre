@@ -105,7 +105,7 @@ void BindQubitMapping(py::module &module) {  // NOLINT(runtime/references)
                             "Initialize saber method.")
                        .def("solve", &mm::SABRE::Solve, "iter_num"_a, "W"_a, "delta1"_a, "delta2"_a,
                             "Solve qubit mapping problem with saber method.")
-                       .def("solve_init", &mm::SABRE::SolverInit, "pi"_a, "iter_num"_a, "W"_a, "delta1"_a, "delta2"_a,
+                       .def("solve_init", &mm::SABRE::SolverInit, "init_layout"_a, "iter_num"_a, "W"_a, "delta1"_a, "delta2"_a,
                             "Solve qubit mapping problem with saber method and configureable initial layout.");
     saber_m.doc() = "SABER method to implement qubit mapping task.";
 }

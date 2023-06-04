@@ -312,15 +312,21 @@ std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> SABRE::Solve(int iter_num, d
 // it takes an extra parameter named pi
 // which is a python list object passed by python caller
 // and it is used to initialize the mapping
-std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> SABRE::SolverInit(VT<int> pi, 
+std::pair<VT<VT<int>>, std::pair<VT<int>, VT<int>>> SABRE::SolverInit(const VT<int>& init_layout, 
                                                                       int iter_num, double W, 
                                                                       double delta1, double delta2) {
+    VT<int> pi(this->num_physical);
+    // copy init_layout to pi
+    for (int i = 0; i < pi.size(); ++i)
+        pi[i] = init_layout[i];
     this->SetParameters(W, delta1, delta2);
+
 
     // iterate to update initial mapping
     for (int t = 0; t < iter_num; ++t) {
         IterOneTurn(pi);
     }
+    auto initial_mapping = pi;
     auto gs = HeuristicSearch(pi, this->DAG);
     VT<VT<int>> gate_info;
     for (auto& g : gs) {
